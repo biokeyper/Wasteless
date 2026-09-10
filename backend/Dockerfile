@@ -5,8 +5,8 @@ COPY pom.xml .
 COPY src ./src
 RUN mvn clean package -DskipTests
 
-# Stage 2: Run the app using a slim JDK image
-FROM openjdk:17-jdk-slim
+# Stage 2: Run the app on a JRE-only image
+FROM eclipse-temurin:17-jre
 LABEL authors="Josephat Juma"
 ENV APP_HOME=/app
 WORKDIR $APP_HOME

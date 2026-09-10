@@ -1,0 +1,11 @@
+# Railway config for the backend service.
+# In the service settings, set Root Directory to /backend and the config file
+# path to /backend/railway.toml; Railway does not look for it inside the root directory.
+
+[build]
+builder = "DOCKERFILE"
+watchPatterns = ["/backend/**"]
+
+[deploy]
+# springdoc serves this without extra dependencies; there is no actuator
+healthcheckPath = "/v3/api-docs"

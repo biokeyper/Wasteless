@@ -1,6 +1,5 @@
 package com.codewithjj.wasteless.items.services;
 
-import com.codewithjj.wasteless.cloudinary.services.CloudinaryImageService;
 import com.codewithjj.wasteless.exceptions.NotValidUUIDException;
 import com.codewithjj.wasteless.exceptions.ResourceNotFoundException;
 import com.codewithjj.wasteless.items.dtos.ItemCreationDTO;
@@ -23,13 +22,13 @@ public class ItemServiceImplementation implements ItemService{
 
     private final ItemRepository itemRepository;
     private final ItemImageRepository itemImageRepository;
-    private final CloudinaryImageService cloudinary;
+    private final ImageStorageService imageStorage;
 
     @Autowired
-    public ItemServiceImplementation(ItemRepository itemRepository, ItemImageRepository itemImageRepository, CloudinaryImageService cloudinary) {
+    public ItemServiceImplementation(ItemRepository itemRepository, ItemImageRepository itemImageRepository, ImageStorageService imageStorage) {
         this.itemRepository = itemRepository;
         this.itemImageRepository = itemImageRepository;
-        this.cloudinary = cloudinary;
+        this.imageStorage = imageStorage;
     }
 
     @Override
@@ -56,8 +55,8 @@ public class ItemServiceImplementation implements ItemService{
             List<ItemImage> images = new ArrayList<>();
 
             for (MultipartFile file : imageFiles.stream().limit(3).toList()) {
-                String publicId = cloudinary.store(file);  // Should return Cloudinary public_id
-                String url = cloudinary.getImageUrl(publicId);
+                String publicId = imageStorage.store(file);  // storage key, needed to delete the image later
+                String url = imageStorage.getImageUrl(publicId);
 
                 ItemImage image = new ItemImage();
                 image.setPublicId(publicId);// Set public_id for DB non-null column
@@ -82,7 +81,7 @@ public class ItemServiceImplementation implements ItemService{
         List<ItemImage> itemImage = itemImageRepository.findByItemId(itemId);
 
         for (ItemImage image : itemImage) {
-            cloudinary.deleteImage(image.getPublicId());
+            imageStorage.deleteImage(image.getPublicId());
             itemImageRepository.delete(image);
         }
          itemRepository.deleteById(itemId);

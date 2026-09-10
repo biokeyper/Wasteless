@@ -32,7 +32,7 @@ export const LocationProvider = ({ children }: { children: ReactNode }) => {
   const [locationError, setLocationError] = useState<string | null>(null);
   const [gettingLocation, setGettingLocation] = useState<boolean>(false);
   const [updateInterval, setUpdateInterval] = useState<
-    NodeJS.Timeout | number | null
+    ReturnType<typeof setInterval> | null
   >(null);
 
   const getCurrentLocation = async () => {

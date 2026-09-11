@@ -1,5 +1,4 @@
-import { supabase } from "@/lib/supabase";
-import type { Session, User } from "@supabase/supabase-js";
+import { AuthUser, restoreSession, Session, subscribe } from "@/lib/auth";
 import React, {
   createContext,
   ReactNode,
@@ -10,38 +9,30 @@ import React, {
 
 type AuthContextType = {
   session: Session | null;
-  user: User | null;
+  user: AuthUser | null;
+  // True until the saved session has been read from secure storage
+  initializing: boolean;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<User | null>(null);
+  const [initializing, setInitializing] = useState(true);
 
   useEffect(() => {
-    const initSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      setSession(data.session);
-      setUser(data.session?.user ?? null);
-    };
-
-    initSession();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
+    const unsubscribe = subscribe(setSession);
+    restoreSession()
+      .then(setSession)
+      .catch(() => setSession(null))
+      .finally(() => setInitializing(false));
+    return unsubscribe;
   }, []);
 
   return (
-    <AuthContext.Provider value={{ session, user }}>
+    <AuthContext.Provider
+      value={{ session, user: session?.user ?? null, initializing }}
+    >
       {children}
     </AuthContext.Provider>
   );

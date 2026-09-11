@@ -4,15 +4,15 @@ import com.codewithjj.wasteless.items.dtos.RequestCreationDTO;
 import com.codewithjj.wasteless.items.entities.ItemRequest;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface ItemRequestService {
-    ItemRequest createRequest(RequestCreationDTO requestCreationDTO);
-    ItemRequest getRequestById(String id);
-    List<ItemRequest> getAllRequestsByUserId(String userId);
-    List<ItemRequest> getIncomingRequestsByUserId(String userId);
-    List<ItemRequest> getOutgoingRequestsByUserId(String userId);
-    String deleteRequestById(String id);
-    ItemRequest acceptRequest(String id);
-    ItemRequest rejectRequest(String id);
-
+    ItemRequest createRequest(RequestCreationDTO requestCreationDTO, UUID requesterId);
+    ItemRequest getRequestById(String id, UUID userId);
+    List<ItemRequest> getAllRequestsByUserId(UUID userId);
+    List<ItemRequest> getIncomingRequestsByUserId(UUID userId);
+    List<ItemRequest> getOutgoingRequestsByUserId(UUID userId);
+    String deleteRequestById(String id, UUID userId);
+    ItemRequest acceptRequest(String id, UUID ownerId);
+    ItemRequest rejectRequest(String id, UUID ownerId);
 }

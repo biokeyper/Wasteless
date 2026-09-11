@@ -5,8 +5,9 @@ import Logo from "@/assets/adaptive-icon.png";
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 export function Navigation() {
-  const user = JSON.parse(localStorage.getItem("auth"));
+  const { user } = useAuth();
   const navigate = useNavigate();
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -61,15 +62,15 @@ export function Navigation() {
                   }}
                 >
                   <AvatarImage
-                    src={user?.session?.user?.user_metadata?.avatar_url}
+                    src={user?.avatarUrl ?? undefined}
                     className="h-full w-full object-cover"
                     alt={
-                      user?.session?.user?.user_metadata?.name || "User avatar"
+                      user?.displayName || "User avatar"
                     }
                   />
                   <AvatarFallback className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20 text-lg font-medium text-foreground/80">
-                    {user?.session?.user?.user_metadata?.name
-                      ? user.session.user.user_metadata.name
+                    {user?.displayName
+                      ? user.displayName
                           .split(" ")
                           .map((n: string) => n[0])
                           .join("")

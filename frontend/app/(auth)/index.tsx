@@ -15,7 +15,8 @@ const WelcomeScreen = () => {
   const { session } = useAuth();
 
   useEffect(() => {
-    if (session?.expires_at && session.expires_at * 1000 > Date.now()) {
+    // An expired access token is refreshed on the first API call
+    if (session) {
       router.replace("/(home)");
     }
   }, [session, router]);

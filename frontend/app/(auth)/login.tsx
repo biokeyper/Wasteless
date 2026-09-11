@@ -2,7 +2,8 @@ import ErrorBanner from "@/components/alerts/ErrorBanner";
 import FormButton from "@/components/forms/FormButton";
 import InputField from "@/components/forms/InputField";
 import PasswordInput from "@/components/forms/PasswordInput";
-import { supabase } from "@/lib/supabase";
+import { AuthError, signIn } from "@/lib/auth";
+import { signInWithGoogle } from "@/lib/googleSignIn";
 import { loginSchema } from "@/validations/login";
 import { useRouter } from "expo-router";
 import { useFormik } from "formik";
@@ -31,22 +32,36 @@ const LoginScreen = () => {
   const handleLogin = async (user: User) => {
     try {
       setLoading(true);
-      const { error, data } = await supabase.auth.signInWithPassword({
-        email: user.email,
-        password: user.password,
-      });
-      if (error) {
-        setError(error?.message);
-      }
-      if (data.session?.access_token) {
-        router.replace("/(home)");
-      }
+      setError("");
+      await signIn(user.email, user.password);
+      router.replace("/(home)");
     } catch (error) {
-      throw new Error(error as string);
+      const err = error as AuthError;
+      if (err.code === "EMAIL_NOT_VERIFIED") {
+        // The backend has already emailed a fresh code
+        router.push({ pathname: "/verify_account", params: { email: user.email } });
+      } else {
+        setError(err.message);
+      }
     } finally {
       setLoading(false);
     }
   };
+
+  const handleGoogle = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      if (await signInWithGoogle()) {
+        router.replace("/(home)");
+      }
+    } catch (error) {
+      setError((error as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView
@@ -79,14 +94,14 @@ const LoginScreen = () => {
         >
           Login
         </FormButton>
-        {/* <FormButton
+        <FormButton
           disabled={loading}
-          onPress={() => {}}
+          onPress={handleGoogle}
           icon={"google"}
           mode="outlined"
         >
           Login with Google
-        </FormButton> */}
+        </FormButton>
         <TouchableOpacity onPress={() => router.navigate("/register")}>
           <Text style={[styles.signupText, styles.text]}>
             Don&#39;t have an account?{" "}

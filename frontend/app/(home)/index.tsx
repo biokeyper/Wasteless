@@ -177,7 +177,7 @@ export default function GiveawayScreen() {
         <TouchableOpacity onPress={() => router.navigate("/(home)/profile")}>
           <Avatar.Text
             size={40}
-            label={user?.user_metadata?.display_name[0].toUpperCase() ?? "U"}
+            label={user?.displayName?.[0]?.toUpperCase() ?? "U"}
             color="#fff"
           />
         </TouchableOpacity>

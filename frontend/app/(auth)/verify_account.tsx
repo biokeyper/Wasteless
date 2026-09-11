@@ -1,10 +1,9 @@
 import ErrorBanner from "@/components/alerts/ErrorBanner";
 import FormButton from "@/components/forms/FormButton";
-import { supabase } from "@/lib/supabase";
+import { resendCode, verifyEmail } from "@/lib/auth";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
-  Alert,
   Keyboard,
   StyleSheet,
   TouchableOpacity,
@@ -82,21 +81,11 @@ const OTPVerificationScreen = () => {
     const enteredOtp = otp.join("");
     try {
       setLoading(true);
-      const { error, data } = await supabase.auth.verifyOtp({
-        token: enteredOtp,
-        email: email.toString(),
-        type: "email",
-      });
-      if (error) {
-        setError(error.message);
-      }
-      if (data.user?.confirmed_at) {
-        Alert.alert("Success", "OTP verified successfully!");
-        router.replace("/login");
-      }
+      await verifyEmail(email.toString(), enteredOtp);
+      // Verifying signs the user in
+      router.replace("/(home)");
     } catch (error) {
-      setError("Something went wrong");
-      throw new Error(error as string);
+      setError((error as Error).message);
     } finally {
       setLoading(false);
     }
@@ -106,20 +95,9 @@ const OTPVerificationScreen = () => {
     setError("");
     try {
       setResending(true);
-      const { error, data } = await supabase.auth.resend({
-        email: email.toString(),
-        type: "signup",
-      });
-
-      if (error) {
-        setError(error.message);
-      }
-      if (data.session) {
-        console.log(data.session);
-      }
+      await resendCode(email.toString());
     } catch (error) {
-      setError("Something went wrong");
-      throw new Error(error as string);
+      setError((error as Error).message);
     } finally {
       setResending(false);
       setTimer(60);
@@ -136,7 +114,7 @@ const OTPVerificationScreen = () => {
       <View style={styles.content}>
         <Text style={styles.title}>Verify Your Account</Text>
         <Text style={styles.subtitle}>
-          We&apos;ve sent a 6-digit verification code to your phone number
+          We&apos;ve sent a 6-digit verification code to your email
         </Text>
         <View style={styles.otpContainer}>
           {otp.map((digit, index) => (

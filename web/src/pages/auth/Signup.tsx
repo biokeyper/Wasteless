@@ -13,7 +13,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { supabase } from "@/lib/supabase";
+import { register, signInWithGoogleIdToken } from "@/lib/auth";
+import { GoogleButton, googleClientId } from "@/components/google-button";
 import {
   Card,
   CardContent,
@@ -25,7 +26,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/navigation";
 const registerSchema = z.object({
   name: z
@@ -50,6 +51,7 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 const Signup = () => {
   const { toast } = useToast();
   const [loading, setLoading] = React.useState(false);
+  const navigate = useNavigate();
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -63,68 +65,51 @@ const Signup = () => {
 
   const onSubmit = async (values: RegisterFormValues) => {
     setLoading(true);
-    // In a real app, you'd create an account with Supabase here
-    const { data, error } = await supabase.auth.signUp({
-      email: values.email,
-      password: values.password,
-      //phone: values.
-      options: {
-        data: {
-          name: values.name,
-          email: values.email,
-          password: values.password,
-          display_name: values.name,
-        },
-      },
-    });
-    if (error) {
+    try {
+      await register({
+        email: values.email,
+        password: values.password,
+        displayName: values.name,
+        username: values.username || undefined,
+      });
+      navigate(
+        `/verify-account?email=${encodeURIComponent(values.email.trim().toLowerCase())}`
+      );
+    } catch (error) {
       toast({
         title: "Signup Failed",
-        description: error.message,
+        description: (error as Error).message,
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
+  };
 
-    if (!data.session) {
-      console.log(data);
-      <Navigate to="/auth/verify" />;
-    } else {
-      localStorage.setItem("auth", JSON.stringify(data));
+  const handleGoogleToken = async (idToken: string) => {
+    try {
+      await signInWithGoogleIdToken(idToken);
       toast({
         title: "Signup Successful",
-        description: "Welcome to Health Tracker!",
+        description: "Welcome to Wasteless!",
       });
-      <Navigate to="/user/dashboard" />;
-    }
-
-    setLoading(false);
-  };
-
-  const handleGoogleSignup = async () => {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: import.meta.env.VITE_GOOGLE_REDIRECT_URI,
-      },
-    });
-    if (error) {
+      navigate("/");
+    } catch (error) {
       toast({
-        title: "Google Login Failed",
-        description: error.message,
+        title: "Google Signup Failed",
+        description: (error as Error).message,
         variant: "destructive",
       });
-      return;
-    }
-    if (data) {
-      localStorage.setItem("user", JSON.stringify(data));
-      toast({
-        title: "Redirecting to Dashboard",
-        description: "You will be redirected to the dashboard",
-      });
     }
   };
 
-  // Ensure correct path to your Supabase client
+  const handleGoogleError = () => {
+    toast({
+      title: "Google Signup Failed",
+      description: "Please try again.",
+      variant: "destructive",
+    });
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -146,44 +131,20 @@ const Signup = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button
-                variant="outline"
-                onClick={handleGoogleSignup}
-                className="w-full border-gray-300"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 48 48"
-                  width="24px"
-                  height="24px"
-                  className="mr-2"
-                >
-                  <path
-                    fill="#FFC107"
-                    d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"
-                  />
-                  <path
-                    fill="#FF3D00"
-                    d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"
-                  />
-                  <path
-                    fill="#4CAF50"
-                    d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"
-                  />
-                  <path
-                    fill="#1976D2"
-                    d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"
-                  />
-                </svg>
-                Sign up with Google
-              </Button>
+              <GoogleButton
+                onToken={handleGoogleToken}
+                onError={handleGoogleError}
+                text="signup_with"
+              />
 
+              {googleClientId && (
               <div className="relative my-6">
                 <Separator />
                 <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-xs text-muted-foreground">
                   OR CONTINUE WITH EMAIL
                 </span>
               </div>
+              )}
 
               <Form {...form}>
                 <form
@@ -256,7 +217,7 @@ const Signup = () => {
               <div className="text-sm text-muted-foreground">
                 <span>Already have an account? </span>
                 <Link
-                  to="/auth/login"
+                  to="/login"
                   className="text-primary underline-offset-4 transition-colors hover:underline"
                 >
                   Sign in

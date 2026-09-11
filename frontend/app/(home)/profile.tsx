@@ -1,6 +1,6 @@
 import ErrorBanner from "@/components/alerts/ErrorBanner";
 import { useAuth } from "@/context/AuthContext";
-import { supabase } from "@/lib/supabase";
+import { signOut } from "@/lib/auth";
 import { useRouter } from "expo-router";
 import moment from "moment";
 import React, { useState } from "react";
@@ -32,12 +32,8 @@ const ProfileScreen = () => {
   const handleLogout = async () => {
     try {
       setLoggingOut(true);
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        setError(error.message);
-      } else {
-        router.replace("/login");
-      }
+      await signOut();
+      router.replace("/login");
     } catch (error) {
       setError((error as Error)?.message ?? "Something went wrong");
     } finally {
@@ -64,16 +60,16 @@ const ProfileScreen = () => {
         {/* Profile Header */}
         <View style={styles.profileHeader}>
           <View style={styles.avatarContainer}>
-            {user?.user_metadata?.avatar_url ? (
+            {user?.avatarUrl ? (
               <Avatar.Image
-                source={{ uri: user.user_metadata.avatar_url }}
+                source={{ uri: user.avatarUrl }}
                 size={100}
               />
             ) : (
               <Avatar.Icon size={100} icon="account" color="#fff" />
             )}
             <View style={styles.verificationBadge}>
-              {user?.user_metadata?.email_verified ? (
+              {user?.emailVerified ? (
                 <Icon
                   source="check-decagram"
                   size={20}
@@ -85,10 +81,10 @@ const ProfileScreen = () => {
             </View>
           </View>
           <Text variant="titleLarge" style={styles.name}>
-            {user?.user_metadata?.display_name || "No name provided"}
+            {user?.displayName || "No name provided"}
           </Text>
           <Text style={styles.handle}>
-            @{user?.user_metadata?.username || "username"}
+            @{user?.username || "username"}
           </Text>
         </View>
 
@@ -138,7 +134,7 @@ const ProfileScreen = () => {
           <Card.Content>
             <List.Item
               title="Email"
-              description={user?.user_metadata?.email || "Not provided"}
+              description={user?.email || "Not provided"}
               left={() => <List.Icon icon="email" />}
               titleStyle={styles.itemTitle}
               descriptionStyle={styles.itemDescription}
@@ -146,7 +142,7 @@ const ProfileScreen = () => {
             <Divider />
             <List.Item
               title="Account Created"
-              description={moment(user?.created_at).format(
+              description={moment(user?.createdAt).format(
                 "DD MMM, YYYY HH:mm A"
               )}
               titleStyle={styles.itemTitle}
@@ -156,14 +152,14 @@ const ProfileScreen = () => {
             <Divider />
             <List.Item
               title="Last Sign In"
-              description={moment(user?.last_sign_in_at).fromNow()}
+              description={moment(user?.lastSignInAt ?? undefined).fromNow()}
               left={() => <List.Icon icon="clock" />}
             />
             <Divider />
             <List.Item
               title="Auth Provider"
               description={
-                user?.app_metadata?.provider?.toUpperCase() || "EMAIL"
+                user?.provider?.toUpperCase() || "EMAIL"
               }
               titleStyle={styles.itemTitle}
               descriptionStyle={styles.itemDescription}

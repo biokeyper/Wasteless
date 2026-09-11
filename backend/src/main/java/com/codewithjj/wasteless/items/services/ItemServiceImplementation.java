@@ -1,5 +1,6 @@
 package com.codewithjj.wasteless.items.services;
 
+import com.codewithjj.wasteless.exceptions.ApiException;
 import com.codewithjj.wasteless.exceptions.NotValidUUIDException;
 import com.codewithjj.wasteless.exceptions.ResourceNotFoundException;
 import com.codewithjj.wasteless.items.dtos.ItemCreationDTO;
@@ -9,6 +10,7 @@ import com.codewithjj.wasteless.items.repositories.ItemImageRepository;
 import com.codewithjj.wasteless.items.repositories.ItemRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,16 +34,15 @@ public class ItemServiceImplementation implements ItemService{
     }
 
     @Override
-    public Item createItem(ItemCreationDTO dto, List<MultipartFile> imageFiles) {
+    public Item createItem(ItemCreationDTO dto, List<MultipartFile> imageFiles, UUID ownerId) {
         Item item = new Item();
         item.setTitle(dto.getTitle());
-        UUID userId = UUID.fromString(dto.getUserId());
         item.setDescription(dto.getDescription());
         item.setQuantity(dto.getQuantity());
         item.setNotes(dto.getNotes());
         item.setTags(dto.getTags());
         item.setCategory(dto.getCategory());
-        item.setUserId(userId);
+        item.setUserId(ownerId);
         item.setPurchaseDate(dto.getPurchaseDate());
         item.setDisposalDate(dto.getDisposalDate());
         item.setCondition(dto.getCondition());
@@ -74,9 +75,10 @@ public class ItemServiceImplementation implements ItemService{
         return savedItem;
     }
 
-    public String deleteItemById(String id) {
+    public String deleteItemById(String id, UUID userId) {
         UUID itemId = UUID.fromString(id); // Convert String to UUID
-        itemRepository.findById(itemId).orElseThrow(() -> new ResourceNotFoundException("Item not found with id: " + id));
+        Item item = itemRepository.findById(itemId).orElseThrow(() -> new ResourceNotFoundException("Item not found with id: " + id));
+        requireOwner(item, userId);
 
         List<ItemImage> itemImage = itemImageRepository.findByItemId(itemId);
 
@@ -100,11 +102,12 @@ public class ItemServiceImplementation implements ItemService{
     }
 
     @Override
-    public Item updateItem(Item updatedItemData, String id) {
+    public Item updateItem(Item updatedItemData, String id, UUID userId) {
         UUID itemId = UUID.fromString(id);
 
         Item existingItem = itemRepository.findById(itemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Item not found with id: " + id));
+        requireOwner(existingItem, userId);
 
         existingItem.setTitle(updatedItemData.getTitle());
         existingItem.setDescription(updatedItemData.getDescription());
@@ -143,4 +146,9 @@ public class ItemServiceImplementation implements ItemService{
         return itemRepository.findNearestItemsWithinRadius(latitude, longitude, range, offset, limit);
     }
 
+    private static void requireOwner(Item item, UUID userId) {
+        if (!userId.equals(item.getUserId())) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "NOT_OWNER", "Only the item's owner can change it");
+        }
+    }
 }

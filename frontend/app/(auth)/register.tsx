@@ -2,7 +2,8 @@ import ErrorBanner from "@/components/alerts/ErrorBanner";
 import FormButton from "@/components/forms/FormButton";
 import InputField from "@/components/forms/InputField";
 import PasswordInput from "@/components/forms/PasswordInput";
-import { supabase } from "@/lib/supabase";
+import { register } from "@/lib/auth";
+import { signInWithGoogle } from "@/lib/googleSignIn";
 import { registerSchema } from "@/validations/resister";
 import { useRouter } from "expo-router";
 import { useFormik } from "formik";
@@ -40,50 +41,32 @@ const RegisterScreen = () => {
     setError("");
 
     try {
-      const { error, data } = await supabase.auth.signUp({
+      await register({
         email: user.email,
         password: user.password,
-
-        options: {
-          data: {
-            display_name: user.name,
-            username: user.username,
-          },
-        },
+        displayName: user.name,
+        username: user.username || undefined,
       });
-
-      if (error) {
-        // User might already exist but not confirmed
-        if (
-          error.message.includes("already registered") ||
-          error.message.includes("User already")
-        ) {
-          router.push({
-            pathname: "/verify_account",
-            params: { email: user.email },
-          });
-        } else {
-          setError(error.message ?? "Registration failed");
-        }
-        return;
-      }
-
-      const email = data.user?.email;
-
-      // If user is already confirmed
-      if (data.user?.confirmed_at) {
-        router.push("/login");
-      } else if (email) {
-        // Either just registered or already existed but unverified
-        router.push({
-          pathname: "/verify_account",
-          params: { email },
-        });
-      } else {
-        setError("Unexpected response. Please try again.");
-      }
+      router.push({
+        pathname: "/verify_account",
+        params: { email: user.email.trim().toLowerCase() },
+      });
     } catch (err) {
-      setError((err as Error)?.message ?? "Something went wrong");
+      setError((err as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogle = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      if (await signInWithGoogle()) {
+        router.replace("/(home)");
+      }
+    } catch (error) {
+      setError((error as Error).message);
     } finally {
       setLoading(false);
     }
@@ -147,13 +130,14 @@ const RegisterScreen = () => {
           Register
         </FormButton>
 
-        {/* <FormButton
+        <FormButton
           mode="outlined"
-          onPress={() => console.log("Google Sign-Up")}
+          onPress={handleGoogle}
+          disabled={loading}
           icon={"google"}
         >
           Sign Up with Google
-        </FormButton> */}
+        </FormButton>
 
         <TouchableOpacity onPress={() => router.back()}>
           <Text style={styles.footerText}>

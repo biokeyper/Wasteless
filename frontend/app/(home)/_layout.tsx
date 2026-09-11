@@ -1,9 +1,17 @@
+import { useAuth } from "@/context/AuthContext";
 import { LocationProvider } from "@/context/LocationContext";
-import { Stack } from "expo-router";
+import { Redirect, Stack } from "expo-router";
 import React from "react";
 import { useTheme } from "react-native-paper";
 const HomeLayout = () => {
   const { colors } = useTheme();
+  const { session, initializing } = useAuth();
+
+  // Signed out (or the session was rejected on refresh): back to login
+  if (!initializing && !session) {
+    return <Redirect href="/login" />;
+  }
+
   return (
     <LocationProvider>
       <Stack

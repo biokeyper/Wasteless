@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,19 +8,16 @@ import { format } from "date-fns";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { Navigation } from "@/components/navigation";
+import { useAuth } from "@/context/AuthContext";
+import { signOut } from "@/lib/auth";
+import { useNavigate } from "react-router-dom";
 
 export function UserProfile() {
-  const [userData, setUserData] = useState(null);
+  const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const user = localStorage.getItem("auth");
-    if (user) {
-      setUserData(JSON.parse(user));
-    }
-  }, []);
-
-  if (!userData) {
+  if (!user) {
     return (
       <div className="flex items-center justify-center h-64">
         <p>No user data found</p>
@@ -29,26 +25,15 @@ export function UserProfile() {
     );
   }
 
-  const user = userData.session.user;
-  const providers = user.app_metadata?.providers || [];
-  const googleIdentity = user.identities?.find((i) => i.provider === "google");
-  const emailIdentity = user.identities?.find((i) => i.provider === "email");
+  const providers: string[] = [user.provider];
 
-  const getUserName = () => {
-    return (
-      user.user_metadata?.name ||
-      user.user_metadata?.display_name ||
-      user.user_metadata?.full_name ||
-      user.email.split("@")[0]
-    );
-  };
+  const getUserName = () => user.displayName || user.email.split("@")[0];
 
-  const getAvatarUrl = () => {
-    return (
-      user.user_metadata?.avatar_url ||
-      user.user_metadata?.picture ||
-      googleIdentity?.identity_data?.picture
-    );
+  const getAvatarUrl = () => user.avatarUrl ?? undefined;
+
+  const handleSignOut = () => {
+    signOut();
+    navigate("/login");
   };
 
   const handleCopy = (text: string) => {
@@ -94,9 +79,18 @@ export function UserProfile() {
                   </CardTitle>
                   <p className="text-muted-foreground mt-1">{user.email}</p>
                 </div>
-                <Button variant="outline" className="rounded-full">
-                  Edit Profile
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" className="rounded-full">
+                    Edit Profile
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="rounded-full"
+                    onClick={handleSignOut}
+                  >
+                    Sign out
+                  </Button>
+                </div>
               </div>
 
               <div className="flex flex-wrap gap-2 mt-2">
@@ -115,12 +109,12 @@ export function UserProfile() {
                   </Badge>
                 ))}
                 <Badge variant="secondary">
-                  Member since {format(new Date(user.created_at), "MMM yyyy")}
+                  Member since {format(new Date(user.createdAt), "MMM yyyy")}
                 </Badge>
                 <Badge
-                  variant={user.email_confirmed_at ? "default" : "outline"}
+                  variant={user.emailVerified ? "default" : "outline"}
                 >
-                  {user.email_confirmed_at ? "Verified" : "Unverified"}
+                  {user.emailVerified ? "Verified" : "Unverified"}
                 </Badge>
               </div>
             </CardHeader>
@@ -143,20 +137,20 @@ export function UserProfile() {
                     <DetailItem
                       label="Email"
                       value={user.email}
-                      verified={!!user.email_confirmed_at}
+                      verified={user.emailVerified}
                       onCopy={() => handleCopy(user.email)}
                     />
                     <DetailItem
                       label="Account Created"
-                      value={format(new Date(user.created_at), "PPpp")}
+                      value={format(new Date(user.createdAt), "PPpp")}
                     />
                     <DetailItem
                       label="Last Sign In"
-                      value={format(new Date(user.last_sign_in_at), "PPpp")}
-                    />
-                    <DetailItem
-                      label="Last Updated"
-                      value={format(new Date(user.updated_at), "PPpp")}
+                      value={
+                        user.lastSignInAt
+                          ? format(new Date(user.lastSignInAt), "PPpp")
+                          : "—"
+                      }
                     />
                   </div>
                 </div>
@@ -169,7 +163,7 @@ export function UserProfile() {
                       <div>
                         <p className="font-medium">Password</p>
                         <p className="text-sm text-muted-foreground">
-                          {emailIdentity ? "Set" : "Not set"}
+                          {user.provider === "email" ? "Set" : "Not set"}
                         </p>
                       </div>
                       <Button variant="outline" size="sm">
@@ -200,26 +194,17 @@ export function UserProfile() {
                   <ConnectedAccount
                     provider="google"
                     connected={providers.includes("google")}
-                    email={googleIdentity?.identity_data?.email}
-                    lastUsed={googleIdentity?.last_sign_in_at}
+                    email={user.email}
+                    lastUsed={user.lastSignInAt ?? undefined}
                   />
                   <ConnectedAccount
                     provider="email"
                     connected={providers.includes("email")}
-                    email={emailIdentity?.identity_data?.email}
-                    lastUsed={emailIdentity?.last_sign_in_at}
+                    email={user.email}
+                    lastUsed={user.lastSignInAt ?? undefined}
                   />
                 </div>
 
-                {/* Metadata */}
-                <div className="mt-6">
-                  <h3 className="text-lg font-semibold mb-3">User Metadata</h3>
-                  <div className="p-4 bg-muted/50 rounded-lg">
-                    <pre className="text-xs overflow-x-auto">
-                      {JSON.stringify(user.user_metadata, null, 2)}
-                    </pre>
-                  </div>
-                </div>
               </div>
             </CardContent>
           </Card>

@@ -93,6 +93,8 @@ function PostItemForm() {
   };
 
   const onSubmit = async (values: PostItemValues) => {
+    // Location is required: it is how people nearby find the item
+    if (!coords) return;
     setSubmitting(true);
     const formData = new FormData();
     images.forEach((file) => formData.append("files", file));
@@ -106,15 +108,13 @@ function PostItemForm() {
         category: values.category,
         condition: values.condition,
         tags: values.tags?.trim() || undefined,
-        location: coords
-          ? {
-              latitude: coords.latitude,
-              longitude: coords.longitude,
-              accuracy: coords.accuracy,
-              address: "",
-              city: "",
-            }
-          : undefined,
+        location: {
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+          accuracy: coords.accuracy,
+          address: "",
+          city: "",
+        },
       })
     );
     try {
@@ -285,10 +285,10 @@ function PostItemForm() {
                   <MapPin className="h-4 w-4 text-primary" />
                   {coords
                     ? "Your current location is attached so people nearby can find it."
-                    : "Location unavailable. Allow location access so people nearby can find your item."}
+                    : "Location is required to post. Allow location access for this site, then reload the page."}
                 </p>
 
-                <Button type="submit" className="w-full" disabled={submitting}>
+                <Button type="submit" className="w-full" disabled={submitting || !coords}>
                   {submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                   Post item
                 </Button>

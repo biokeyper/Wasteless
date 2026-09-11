@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Clock, Heart } from "lucide-react";
 import sampleItems from "@/assets/sample-items.jpg";
 import { useLocation } from "@/context/LocationProvider";
-import numbro from "numbro";
+import { formatDistance, itemMapsUrl, itemPlace } from "@/lib/itemLocation";
 import moment from "moment";
 type ItemCardProps = {
   item: any;
@@ -17,6 +17,8 @@ export function ItemCard({ item }: ItemCardProps) {
     item?.location?.latitude as number,
     item?.location?.longitude as number
   );
+  const place = itemPlace(item?.location);
+  const mapsUrl = itemMapsUrl(item?.location);
 
   return (
     <Card className="group overflow-hidden border-0 shadow-card hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-card">
@@ -53,15 +55,21 @@ export function ItemCard({ item }: ItemCardProps) {
         <div className="space-y-2 text-sm text-muted-foreground">
           <div className="flex items-center gap-1">
             <MapPin className="h-3 w-3 text-primary" />
-            <span>
-              {distance == null
-                ? "Calculating distance..."
-                : distance < 1000
-                ? `${numbro(distance).format({
-                    thousandSeparated: true,
-                  })} M Away`
-                : `${numbro(distance / 1000).format({ mantissa: 2 })} KM Away`}
-            </span>
+            {distance != null ? (
+              <span>{formatDistance(distance)}</span>
+            ) : mapsUrl ? (
+              // Without the viewer's location, show where the item is instead of a distance
+              <a
+                href={mapsUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="underline-offset-4 hover:text-primary hover:underline"
+              >
+                {place ?? "View on map"}
+              </a>
+            ) : (
+              <span>{place ?? "Location not shared"}</span>
+            )}
           </div>
           <div className="flex items-center gap-1">
             <Clock className="h-3 w-3" />

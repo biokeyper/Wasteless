@@ -1,9 +1,9 @@
 import { useLocation } from "@/context/LocationContext";
+import { itemMapsUrl, locationLabel } from "@/lib/itemLocation";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import numbro from "numbro";
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { Linking, StyleSheet, View } from "react-native";
 import { Card, Chip, Text, useTheme } from "react-native-paper";
 type ItemCardProps = {
   item: any;
@@ -18,6 +18,7 @@ const ItemCard = ({ item }: ItemCardProps) => {
     item?.location?.latitude,
     item?.location?.longitude
   );
+  const mapsUrl = itemMapsUrl(item?.location);
   //console.log(item?.location?.latitude, item?.location?.longitude);
 
   return (
@@ -41,15 +42,19 @@ const ItemCard = ({ item }: ItemCardProps) => {
             {item.description.length > 100 ? "...." : ""}
           </Text>
 
-          <Chip style={styles.pill} compact icon={"map-marker"}>
+          <Chip
+            style={styles.pill}
+            compact
+            icon={"map-marker"}
+            // Without the viewer's location, tapping shows the item on a map
+            onPress={
+              distance == null && mapsUrl
+                ? () => Linking.openURL(mapsUrl)
+                : undefined
+            }
+          >
             <Text style={styles.pillText}>
-              {distance == null
-                ? "Calculating distance..."
-                : distance < 1000
-                ? `${numbro(distance).format({
-                    thousandSeparated: true,
-                  })} m away`
-                : `${numbro(distance / 1000).format({ mantissa: 2 })} km away`}
+              {locationLabel(item?.location, distance)}
             </Text>
           </Chip>
         </View>

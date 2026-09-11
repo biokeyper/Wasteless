@@ -3,12 +3,12 @@ import ErrorBanner from "@/components/alerts/ErrorBanner";
 import FormButton from "@/components/forms/FormButton";
 import { useAuth } from "@/context/AuthContext";
 import { useLocation } from "@/context/LocationContext";
+import { itemMapsUrl, locationLabel } from "@/lib/itemLocation";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import moment from "moment";
-import numbro from "numbro";
 import React, { useMemo, useState } from "react";
-import { Alert, ScrollView, StyleSheet, View } from "react-native";
+import { Alert, Linking, ScrollView, StyleSheet, View } from "react-native";
 import {
   Appbar,
   Banner,
@@ -48,6 +48,7 @@ const RequestItemScreen = () => {
     item?.location?.latitude,
     item?.location?.longitude
   );
+  const mapsUrl = itemMapsUrl(item?.location);
 
   const handleDeleteItem = async () => {
     setIsDeleting(true);
@@ -177,16 +178,16 @@ const RequestItemScreen = () => {
             <View style={styles.metaRow}>
               <View style={styles.metaItem}>
                 <Icon source="map-marker" size={20} />
-                <Text style={styles.metaText}>
-                  {distance === null || distance === undefined ? (
-                    "Could not get Distance"
-                  ) : distance === 0 ? (
-                    "Near"
-                  ) : (
-                    <Text style={styles.metaText}>
-                      {numbro(distance / 1000).format({ mantissa: 2 })} KM Away
-                    </Text>
-                  )}
+                <Text
+                  style={styles.metaText}
+                  // Without the viewer's location, tapping shows the item on a map
+                  onPress={
+                    distance == null && mapsUrl
+                      ? () => Linking.openURL(mapsUrl)
+                      : undefined
+                  }
+                >
+                  {locationLabel(item?.location, distance)}
                 </Text>
               </View>
               <View style={styles.metaItem}>

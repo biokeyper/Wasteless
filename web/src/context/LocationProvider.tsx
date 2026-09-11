@@ -65,13 +65,19 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({
     itemLatitude: number,
     itemLongitude: number
   ): number | undefined | null {
-    if (!currentLocation) return null;
+    if (
+      !currentLocation?.coords ||
+      !Number.isFinite(itemLatitude) ||
+      !Number.isFinite(itemLongitude)
+    ) {
+      return null;
+    }
 
     const distance = getDistance(
       { latitude: itemLatitude, longitude: itemLongitude },
       {
-        latitude: currentLocation.coords?.latitude ?? 0,
-        longitude: currentLocation.coords?.longitude ?? 0,
+        latitude: currentLocation.coords.latitude,
+        longitude: currentLocation.coords.longitude,
       }
     );
 

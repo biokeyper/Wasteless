@@ -115,7 +115,13 @@ export const LocationProvider = ({ children }: { children: ReactNode }) => {
     itemLatitude: number,
     itemLongitude: number
   ): number | undefined | null {
-    if (!currentLocation?.coords) return null;
+    if (
+      !currentLocation?.coords ||
+      !Number.isFinite(itemLatitude) ||
+      !Number.isFinite(itemLongitude)
+    ) {
+      return null;
+    }
 
     const distance = getDistance(
       { latitude: itemLatitude, longitude: itemLongitude },

@@ -8,6 +8,7 @@ import LocationDisplay from "@/components/location/LocationDisplay";
 import { categories, conditions } from "@/constants/options/items";
 import { useAuth } from "@/context/AuthContext";
 import { useLocation } from "@/context/LocationContext";
+import { areaName } from "@/lib/itemLocation";
 import { shareItemSchema } from "@/validations/share_item";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
@@ -52,17 +53,25 @@ const ShareItemScreen = () => {
       } as any);
     }
 
+    const coords = currentLocation?.coords;
+    if (!coords) {
+      setError("Location is required to share an item. Please enable location.");
+      return;
+    }
+    // Area name (neighbourhood, city) so people browsing without location still see roughly where it is
+    const city = await areaName(coords.latitude, coords.longitude);
+
     formData.append(
       "metadata",
       JSON.stringify({
         ...values,
         userId: user?.id,
         location: {
-          latitude: currentLocation?.coords?.latitude,
-          longitude: currentLocation?.coords?.longitude,
-          accuracy: currentLocation?.coords?.accuracy,
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+          accuracy: coords.accuracy,
           address: "",
-          city: "",
+          city,
         },
       })
     );
@@ -266,7 +275,12 @@ const ShareItemScreen = () => {
             onPress={() => formik.handleSubmit()}
             style={styles.submitButton}
             loading={loading}
-            disabled={images.length === 0 || !formik.isValid || loading}
+            disabled={
+              images.length === 0 ||
+              !formik.isValid ||
+              loading ||
+              !currentLocation?.coords
+            }
           >
             Post item
           </FormButton>

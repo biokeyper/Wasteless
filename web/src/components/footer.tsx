@@ -33,14 +33,14 @@ export function Footer() {
             <h3 className="font-semibold mb-4">Get Started</h3>
             <ul className="space-y-2 text-muted-foreground">
               <li>
-                <a href="#" className="hover:text-primary transition-colors">
+                <Link to="/post" className="hover:text-primary transition-colors">
                   Post an Item
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-primary transition-colors">
+                <Link to="/browse" className="hover:text-primary transition-colors">
                   Browse Items
-                </a>
+                </Link>
               </li>
               <li>
                 <a href="#" className="hover:text-primary transition-colors">

@@ -22,7 +22,7 @@ export function ItemCard({ item }: ItemCardProps) {
     <Card className="group overflow-hidden border-0 shadow-card hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-card">
       <div className="aspect-[4/3] overflow-hidden bg-muted">
         <img
-          src={item?.images ? item?.images[0].url : sampleItems}
+          src={item?.images?.[0]?.url ?? sampleItems}
           alt={item?.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />

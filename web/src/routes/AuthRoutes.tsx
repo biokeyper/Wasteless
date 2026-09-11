@@ -6,11 +6,21 @@ import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import { UserProfile } from "@/pages/profile/UserProfile";
 import DeleteAccountInfo from "@/pages/profile/DeleteAccountInfo";
 import NotFound from "@/pages/NotFound";
+import BrowseItems from "@/pages/items/BrowseItems";
+import PostItem from "@/pages/items/PostItem";
 const AuthRoutes = {
   children: [
     {
       path: "/",
       element: <Index />,
+    },
+    {
+      path: "/browse",
+      element: <BrowseItems />,
+    },
+    {
+      path: "/post",
+      element: <PostItem />,
     },
 
     {

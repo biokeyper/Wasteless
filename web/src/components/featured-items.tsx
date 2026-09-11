@@ -5,6 +5,7 @@ import { useLocation } from "@/context/LocationProvider";
 import { ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect, useCallback } from "react";
+import { Link } from "react-router-dom";
 
 export function FeaturedItems() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -73,9 +74,11 @@ export function FeaturedItems() {
           </div>
 
           <div className="text-center">
-            <Button variant="outline" size="lg" className="group">
-              View All Items
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            <Button variant="outline" size="lg" className="group" asChild>
+              <Link to="/browse">
+                View All Items
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
             </Button>
           </div>
         </div>

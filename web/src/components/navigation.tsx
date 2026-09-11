@@ -20,12 +20,12 @@ export function Navigation() {
         </Link>
 
         <div className="hidden md:flex items-center space-x-6">
-          <a
-            href="#"
+          <Link
+            to="/browse"
             className="text-foreground hover:text-primary transition-colors"
           >
             Browse Items
-          </a>
+          </Link>
           <a
             href="#"
             className="text-foreground hover:text-primary transition-colors"
@@ -81,7 +81,11 @@ export function Navigation() {
               </>
             )}
           </div>
-          <Button variant="hero" size="sm">
+          <Button
+            variant="hero"
+            size="sm"
+            onClick={() => navigate(user ? "/post" : "/login")}
+          >
             <Plus className="h-4 w-4" />
             Post Item
           </Button>

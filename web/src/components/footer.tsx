@@ -1,6 +1,7 @@
 import { Heart, Github, Twitter, Instagram } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { PRIVACY_POLICY_URL } from "@/constants/contact";
 
 export function Footer() {
   return (
@@ -43,9 +44,9 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-primary transition-colors">
+                <Link to="/#how-it-works" className="hover:text-primary transition-colors">
                   How It Works
-                </a>
+                </Link>
               </li>
               <li>
                 <a href="#" className="hover:text-primary transition-colors">
@@ -90,18 +91,20 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-primary transition-colors">
+                <Link to="/#contact" className="hover:text-primary transition-colors">
                   Contact Us
-                </a>
+                </Link>
               </li>
 
               <li>
-                <Link
-                  to="/privacy-policy"
+                <a
+                  href={PRIVACY_POLICY_URL}
+                  target="_blank"
+                  rel="noreferrer"
                   className="hover:text-primary transition-colors"
                 >
                   Privacy Policy
-                </Link>
+                </a>
               </li>
               <li>
                 <a href="#" className="hover:text-primary transition-colors">

@@ -26,18 +26,18 @@ export function Navigation() {
           >
             Browse Items
           </Link>
-          <a
-            href="#"
+          <Link
+            to="/#how-it-works"
             className="text-foreground hover:text-primary transition-colors"
           >
             How It Works
-          </a>
-          <a
-            href="#"
+          </Link>
+          <Link
+            to="/#about"
             className="text-foreground hover:text-primary transition-colors"
           >
             About
-          </a>
+          </Link>
         </div>
 
         <div className="flex items-center space-x-2">

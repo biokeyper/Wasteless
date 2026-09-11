@@ -4,7 +4,9 @@ import VerticalItemCard from "@/components/items/VeritcalItemCard";
 import { useAuth } from "@/context/AuthContext";
 import { useLocation } from "@/context/LocationContext";
 import { MaterialIcons } from "@expo/vector-icons";
+import { PRIVACY_POLICY_URL } from "@/constants/contact";
 import { useRouter } from "expo-router";
+import { openBrowserAsync } from "expo-web-browser";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   FlatList,
@@ -216,7 +218,17 @@ export default function GiveawayScreen() {
           onEndReached={handleLoadMore}
           //onTouchEnd={handleLoadMore}
           onEndReachedThreshold={0.5}
-          ListFooterComponent={loading ? <ActivityIndicator /> : null}
+          ListFooterComponent={
+            <View style={styles.listFooter}>
+              {loading ? <ActivityIndicator /> : null}
+              <Text
+                style={styles.privacyLink}
+                onPress={() => openBrowserAsync(PRIVACY_POLICY_URL)}
+              >
+                Privacy Policy
+              </Text>
+            </View>
+          }
           // getItemLayout={(data, index) => ({
           //   length: layout === "grid" ? 180 : 250,
           //   offset: (layout === "grid" ? 180 : 250) * index,
@@ -236,6 +248,16 @@ export default function GiveawayScreen() {
 }
 
 const styles = StyleSheet.create({
+  listFooter: {
+    alignItems: "center",
+    paddingVertical: 24,
+    gap: 12,
+  },
+  privacyLink: {
+    fontFamily: "OutFitRegular",
+    textDecorationLine: "underline",
+    opacity: 0.7,
+  },
   container: {
     padding: 0,
     paddingBottom: 100,

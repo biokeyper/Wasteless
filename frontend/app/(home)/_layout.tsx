@@ -42,6 +42,14 @@ const HomeLayout = () => {
           name="settings"
           options={{ headerShown: true, title: "Settings" }}
         />
+        <Stack.Screen
+          name="about"
+          options={{ headerShown: true, title: "About" }}
+        />
+        <Stack.Screen
+          name="contact"
+          options={{ headerShown: true, title: "Contact Us" }}
+        />
       </Stack>
     </LocationProvider>
   );

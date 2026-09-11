@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import {
@@ -13,6 +14,7 @@ import {
 
 const Settings = () => {
   const { colors } = useTheme();
+  const router = useRouter();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
   const [biometricEnabled, setBiometricEnabled] = useState(false);
@@ -120,13 +122,13 @@ const Settings = () => {
           title: "Contact Us",
           icon: "email",
           action: <Icon source="chevron-right" size={20} />,
-          onPress: () => console.log("Contact us"),
+          onPress: () => router.push("/contact"),
         },
         {
           title: "About App",
           icon: "information",
           action: <Icon source="chevron-right" size={20} />,
-          onPress: () => console.log("About app"),
+          onPress: () => router.push("/about"),
         },
       ],
     },

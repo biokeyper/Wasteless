@@ -169,11 +169,32 @@ public class AuthService {
         tokens.revoke(req.refreshToken());
     }
 
+    // Every other device is signed out, and this one gets a fresh session back
+    @Transactional
+    public AuthResponse changePassword(UUID userId, ChangePasswordRequest req) {
+        User user = users.findById(userId).orElseThrow(AuthService::notSignedIn);
+        if (user.getPasswordHash() == null) {
+            throw new ApiException(HttpStatus.CONFLICT, "NO_PASSWORD_SET",
+                    "This account signs in with Google, so it has no password to change.");
+        }
+        if (!passwordEncoder.matches(req.currentPassword(), user.getPasswordHash())) {
+            throw new ApiException(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS",
+                    "Your current password isn't right.");
+        }
+        if (passwordEncoder.matches(req.newPassword(), user.getPasswordHash())) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "PASSWORD_UNCHANGED",
+                    "Your new password has to be different from the current one.");
+        }
+        user.setPasswordHash(passwordEncoder.encode(req.newPassword()));
+        tokens.revokeAllSessions(userId);
+        return signIn(user);
+    }
+
     @Transactional(readOnly = true)
     public UserResponse me(UUID userId) {
         return users.findById(userId)
                 .map(UserResponse::from)
-                .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "Sign in to continue."));
+                .orElseThrow(AuthService::notSignedIn);
     }
 
     private AuthResponse signIn(User user) {
@@ -211,6 +232,10 @@ public class AuthService {
 
     private static String blankToNull(String value) {
         return value == null || value.isBlank() ? null : value.trim();
+    }
+
+    private static ApiException notSignedIn() {
+        return new ApiException(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "Sign in to continue.");
     }
 
     private static ApiException invalidCode() {

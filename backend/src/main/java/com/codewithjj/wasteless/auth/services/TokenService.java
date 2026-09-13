@@ -22,6 +22,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.HexFormat;
+import java.util.UUID;
 
 @Service
 public class TokenService {
@@ -85,6 +86,17 @@ public class TokenService {
         }
         row.setRevokedAt(now);
         return issue(row.getUser());
+    }
+
+    // Every other device is signed out; used when the password changes
+    @Transactional
+    public void revokeAllSessions(UUID userId) {
+        refreshTokens.revokeAllForUser(userId, Instant.now());
+    }
+
+    @Transactional
+    public void deleteAllSessions(UUID userId) {
+        refreshTokens.deleteAllForUser(userId);
     }
 
     @Transactional

@@ -31,6 +31,11 @@ public final class AuthDtos {
 
     public record GoogleSignInRequest(@NotBlank String idToken) {}
 
+    public record ChangePasswordRequest(
+            @NotBlank String currentPassword,
+            // bcrypt only uses the first 72 bytes of a password
+            @NotBlank @Size(min = 6, max = 72) String newPassword) {}
+
     public record RefreshRequest(@NotBlank String refreshToken) {}
 
     public record RegisterResponse(String email, boolean verificationRequired) {}

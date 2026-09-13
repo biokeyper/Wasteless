@@ -16,4 +16,9 @@ public interface EmailVerificationCodeRepository extends JpaRepository<EmailVeri
     @Modifying
     @Query("update EmailVerificationCode c set c.consumedAt = :now where c.user.id = :userId and c.consumedAt is null")
     int consumeAllForUser(@Param("userId") UUID userId, @Param("now") Instant now);
+
+    // Rows point at the user, so they have to go before the account itself can
+    @Modifying
+    @Query("delete from EmailVerificationCode c where c.user.id = :userId")
+    int deleteAllForUser(@Param("userId") UUID userId);
 }

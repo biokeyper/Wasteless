@@ -72,4 +72,12 @@ public class AuthController {
     public UserResponse me(@AuthenticationPrincipal Jwt jwt) {
         return authService.me(CurrentUser.id(jwt));
     }
+
+    @PostMapping("change-password")
+    @Operation(summary = "Change the password",
+            description = "Signs every other device out and returns a fresh session for this one")
+    public AuthResponse changePassword(@AuthenticationPrincipal Jwt jwt,
+                                       @Valid @RequestBody ChangePasswordRequest req) {
+        return authService.changePassword(CurrentUser.id(jwt), req);
+    }
 }

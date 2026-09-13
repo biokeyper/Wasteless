@@ -1,5 +1,7 @@
+import { PRIVACY_POLICY_URL } from "@/constants/contact";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "expo-router";
+import { openBrowserAsync } from "expo-web-browser";
 import React, { useEffect, useState } from "react"; // Add useEffect
 import { Image, StyleSheet, View } from "react-native";
 import { Button, Text } from "react-native-paper";
@@ -53,15 +55,24 @@ const WelcomeScreen = () => {
         resizeMode="cover"
       />
 
-      <Button
-        mode="contained"
-        onPress={() => router.navigate("/login")}
-        style={styles.button}
-        contentStyle={styles.buttonContent}
-        labelStyle={{ fontFamily: "OutFitBold", color: "#fff" }}
-      >
-        Get Started
-      </Button>
+      <View style={styles.footer}>
+        <Button
+          mode="contained"
+          onPress={() => router.navigate("/login")}
+          style={styles.button}
+          contentStyle={styles.buttonContent}
+          labelStyle={{ fontFamily: "OutFitBold", color: "#fff" }}
+        >
+          Get Started
+        </Button>
+
+        <Text
+          style={styles.privacyLink}
+          onPress={() => openBrowserAsync(PRIVACY_POLICY_URL)}
+        >
+          Privacy Policy
+        </Text>
+      </View>
     </View>
   );
 };
@@ -86,10 +97,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "OutFitRegular",
   },
+  footer: {
+    alignItems: "center",
+    gap: 16,
+  },
   button: {
     alignSelf: "center",
     borderRadius: 30,
     width: "90%",
+  },
+  privacyLink: {
+    fontFamily: "OutFitRegular",
+    textDecorationLine: "underline",
+    opacity: 0.7,
   },
   buttonContent: {
     paddingVertical: 8,

@@ -15,6 +15,7 @@ import { useRouter } from "expo-router";
 import { useFormik } from "formik";
 import React, { useState } from "react";
 import { Image, ScrollView, StyleSheet, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   ActivityIndicator,
   Appbar,
@@ -28,6 +29,7 @@ import {
 const ShareItemScreen = () => {
   const router = useRouter();
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const [images, setImages] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -300,6 +302,7 @@ const ShareItemScreen = () => {
             borderTopLeftRadius: 16,
             borderTopRightRadius: 16,
             padding: 20,
+            paddingBottom: 20 + insets.bottom,
           }}
         >
           {gettingLocation ? (

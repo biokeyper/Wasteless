@@ -19,6 +19,7 @@ import {
   TouchableRipple,
   useTheme,
 } from "react-native-paper";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import InputField from "./InputField";
 const { height } = Dimensions.get("window");
 
@@ -50,6 +51,7 @@ const InputSelect = ({
   errorMessage,
 }: InputSelectProps) => {
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
   const [visible, setVisible] = useState(false);
   const [search, setSearch] = useState("");
 
@@ -143,6 +145,7 @@ const InputSelect = ({
             borderTopLeftRadius: 20,
             borderTopRightRadius: 20,
             padding: 20,
+            paddingBottom: 20 + insets.bottom,
             position: "absolute",
             left: 0,
             right: 0,

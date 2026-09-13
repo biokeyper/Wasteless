@@ -13,6 +13,7 @@ import {
   DefaultTheme as PaperDefaultTheme,
   PaperProvider,
 } from "react-native-paper";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const AppLightTheme = {
   ...PaperDefaultTheme,
@@ -69,11 +70,17 @@ function App() {
     <PaperProvider theme={paperTheme}>
       <ThemeProvider value={dark ? DarkTheme : DefaultTheme}>
         <AuthProvider>
-          <Stack>
-            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-            <Stack.Screen name="(home)" options={{ headerShown: false }} />
-            <Stack.Screen name="+not-found" />
-          </Stack>
+          {/* Android draws behind the navigation bar, so screens are inset to clear it */}
+          <SafeAreaView
+            style={{ flex: 1, backgroundColor: paperTheme.colors.background }}
+            edges={["bottom"]}
+          >
+            <Stack>
+              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+              <Stack.Screen name="(home)" options={{ headerShown: false }} />
+              <Stack.Screen name="+not-found" />
+            </Stack>
+          </SafeAreaView>
         </AuthProvider>
         <StatusBar style={dark ? "light" : "dark"} />
       </ThemeProvider>

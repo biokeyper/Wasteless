@@ -120,6 +120,39 @@ export function refresh(): Promise<Session | null> {
   return refreshing;
 }
 
+// Needs the access token, and the server hands back a fresh session because it revokes
+// every refresh token the account had, this device's included
+export async function changePassword(currentPassword: string, newPassword: string) {
+  const send = async () => {
+    if (!current) throw new AuthError("Sign in to continue.", "UNAUTHORIZED");
+    const { data } = await authHttp.post<AuthResponse>(
+      "/auth/change-password",
+      { currentPassword, newPassword },
+      { headers: { Authorization: `Bearer ${current.accessToken}` } }
+    );
+    return data;
+  };
+
+  try {
+    let response: AuthResponse;
+    try {
+      response = await send();
+    } catch (error) {
+      // An expired access token gets one refresh-and-retry, the way the API client does it.
+      // A wrong current password answers 401 too, but with its own code, so it isn't retried.
+      const code = axios.isAxiosError(error)
+        ? (error.response?.data as { code?: string } | undefined)?.code
+        : undefined;
+      if (code !== "UNAUTHORIZED" || !(await refresh())) throw error;
+      response = await send();
+    }
+    const { expiresIn, ...session } = response;
+    await setSession(session);
+  } catch (error) {
+    throw toAuthError(error);
+  }
+}
+
 export async function signOut() {
   const refreshToken = current?.refreshToken;
   await setSession(null);

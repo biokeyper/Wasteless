@@ -1,12 +1,10 @@
-import { PRIVACY_POLICY_URL } from "@/constants/contact";
+import { PRIVACY_POLICY_URL, WEBSITE_URL } from "@/constants/contact";
 import Constants from "expo-constants";
 import { useRouter } from "expo-router";
 import { openBrowserAsync } from "expo-web-browser";
 import React from "react";
 import { Image, ScrollView, StyleSheet, View } from "react-native";
 import { Card, Divider, List, Text, useTheme } from "react-native-paper";
-
-const WEBSITE = "https://wasteless.biokeyper.com";
 
 // Same three steps as the website's "How WasteLess Works" section
 const steps = [
@@ -32,9 +30,9 @@ const steps = [
 
 // Opened in the in-app browser
 const links = [
-  { icon: "web", title: "Website", url: WEBSITE },
+  { icon: "web", title: "Website", url: WEBSITE_URL },
   { icon: "shield-account", title: "Privacy Policy", url: PRIVACY_POLICY_URL },
-  { icon: "account-remove", title: "Delete your account", url: `${WEBSITE}/account-deletion-info` },
+  { icon: "account-remove", title: "Delete your account", url: `${WEBSITE_URL}/account-deletion-info` },
   { icon: "github", title: "Source code on GitHub", url: "https://github.com/biokeyper/Wasteless" },
 ];
 

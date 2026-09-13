@@ -43,6 +43,10 @@ const HomeLayout = () => {
           options={{ headerShown: true, title: "Settings" }}
         />
         <Stack.Screen
+          name="change_password"
+          options={{ headerShown: true, title: "Change Password" }}
+        />
+        <Stack.Screen
           name="about"
           options={{ headerShown: true, title: "About" }}
         />

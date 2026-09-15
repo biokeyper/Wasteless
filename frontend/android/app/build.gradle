@@ -81,6 +81,17 @@ def enableMinifyInReleaseBuilds = (findProperty('android.enableMinifyInReleaseBu
  */
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
+/**
+ * The Play upload key. Both the keystore and android/keystore.properties are kept out of
+ * the repository, so a checkout without them still builds — signed with the debug key.
+ */
+def uploadKeystorePropertiesFile = rootProject.file('keystore.properties')
+def uploadKeystoreProperties = new Properties()
+if (uploadKeystorePropertiesFile.exists()) {
+    uploadKeystorePropertiesFile.withInputStream { uploadKeystoreProperties.load(it) }
+}
+def hasUploadKeystore = uploadKeystoreProperties.containsKey('storeFile')
+
 android {
     ndkVersion rootProject.ext.ndkVersion
 
@@ -104,15 +115,23 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        upload {
+            if (hasUploadKeystore) {
+                storeFile file(uploadKeystoreProperties['storeFile'])
+                storePassword uploadKeystoreProperties['storePassword']
+                keyAlias uploadKeystoreProperties['keyAlias']
+                keyPassword uploadKeystoreProperties['keyPassword']
+            }
+        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            // Play releases are signed with the upload key; without it on this machine
+            // the build falls back to the debug key, which Play will not accept.
+            signingConfig hasUploadKeystore ? signingConfigs.upload : signingConfigs.debug
             def enableShrinkResources = findProperty('android.enableShrinkResourcesInReleaseBuilds') ?: 'false'
             shrinkResources enableShrinkResources.toBoolean()
             minifyEnabled enableMinifyInReleaseBuilds

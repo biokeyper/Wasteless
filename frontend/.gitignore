@@ -13,6 +13,8 @@ expo-env.d.ts
 .kotlin/
 *.orig.*
 *.jks
+# Holds the upload key's password
+keystore.properties
 *.p8
 *.p12
 *.key

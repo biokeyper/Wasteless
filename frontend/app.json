@@ -2,7 +2,7 @@
   "expo": {
     "name": "Wasteless",
     "slug": "Wasteless",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "icon": "./assets/images/icon.png",
     "scheme": "wasteless",
     "userInterfaceStyle": "automatic",
